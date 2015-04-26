@@ -3,41 +3,60 @@ var fs = require('fs');
 
 var MASKS = [ 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 ];
 
+var HASHES = [ 'MD5', 'SHA1', 'SHA256' ];
+
 exports.create = function(sizeInBytes){
   return new BloomFilter(sizeInBytes);
 };
 
-var BloomFilter = function(sizeInBytes){
-  if (!sizeInBytes || sizeInBytes < 1){
-    throw new Error('Byte size should be at least one');
+exports.load = function(path, cb){
+  fs.readFile(path, function(err, content){
+    if (err) { return cb(err); }
+
+    cb(null, new BloomFilter(content));
+  });
+};
+
+var bitAndByte = function(pos){
+  return { byte: (pos / 8) | 0, bit: pos % 8 };
+};
+
+var BloomFilter = function(param){
+  if (!param){
+    throw new Error('Must either provide an existing buffer or a byte size');
   }
 
-  sizeInBytes = sizeInBytes | 0;
+  if (Buffer.isBuffer(param)){
+    this._bytes = param;
+    this.size = param.length * 8;
+  } else {
+    var sizeInBytes = param | 0;
+    if (sizeInBytes < 1){
+      throw new Error('Byte size should be at least one');
+    }
 
-  this.size = sizeInBytes * 8;
-  this.bytes = new Buffer(sizeInBytes).fill(0);
+    this.size = sizeInBytes * 8;
+    this._bytes = new Buffer(sizeInBytes).fill(0);
+  }
 };
 
 BloomFilter.prototype.add = function(element) {
-  var bits = this.__applyHashes(element);
+  var bits = this._applyHashes(element);
 
   bits.forEach(function(position){
-    var byte = (position / 8) | 0;
-    var bit = position % 8;
-    this.bytes[byte] = this.bytes[byte] | MASKS[bit];
+    var pos = bitAndByte(position);
+    this._bytes[pos.byte] = this._bytes[pos.byte] | MASKS[pos.bit];
   }, this);
 };
 
 BloomFilter.prototype.has = function(element){
-  var bits = this.__applyHashes(element);
+  var bits = this._applyHashes(element);
   var self = this;
 
-  return !!bits.reduce(function(inFilter, position){
-    var byte = (position / 8) | 0;
-    var bit = position % 8;
-
-    return inFilter && (self.bytes[byte] & MASKS[bit]);
-  }, true);
+  return !bits.some(function(position){
+    var pos = bitAndByte(position);
+    return !(self._bytes[pos.byte] & MASKS[pos.bit]);
+  });
 };
 
 BloomFilter.prototype.store = function(path, cb){
@@ -47,16 +66,10 @@ BloomFilter.prototype.store = function(path, cb){
   ws.end();
 };
 
-BloomFilter.prototype.__applyHashes = function(element) {
-  var digest1 = crypto.createHash('md5').update(element).digest();
-  var digest2 = crypto.createHash('SHA1').update(element).digest();
-  var digest3 = crypto.createHash('SHA256').update(element).digest();
+BloomFilter.prototype._applyHashes = function(element) {
+  return HASHES.map(function(hashType){
+    var digest = crypto.createHash(hashType).update(element).digest();
 
-  var bits = [
-    digest1[digest1.length - 1] % this.size,
-    digest2[digest2.length - 1] % this.size,
-    digest3[digest3.length - 1] % this.size
-  ];
-
-  return bits;
+    return digest[digest.length - 1] % this.size;
+  }, this);
 };
