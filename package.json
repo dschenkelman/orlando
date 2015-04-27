@@ -1,14 +1,17 @@
 {
   "name": "orlando",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A simple bloom filter for buffers written in node.js",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "Damian Schenkelman",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "^2.2.4"
+  }
 }

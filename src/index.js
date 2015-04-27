@@ -22,6 +22,7 @@ var bitAndByte = function(pos){
 };
 
 var BloomFilter = function(param){
+  // TODO: calculation based on probability and size
   if (!param){
     throw new Error('Must either provide an existing buffer or a byte size');
   }
@@ -67,6 +68,7 @@ BloomFilter.prototype.store = function(path, cb){
 };
 
 BloomFilter.prototype._applyHashes = function(element) {
+  // TODO: something like http://www.eecs.harvard.edu/~kirsch/pubs/bbbf/esa06.pdf
   return HASHES.map(function(hashType){
     var digest = crypto.createHash(hashType).update(element).digest();
 
