@@ -1,5 +1,7 @@
 var assert = require('assert');
 var fs = require('fs');
+var buffertools = require('buffertools');
+var path = require('path');
 
 var bloomFilter = require('../');
 
@@ -32,22 +34,28 @@ describe('runtime', function(){
   });
 });
 
-describe.skip('storage', function(){
-  var TEST_FILE = 'test.dat';
+describe('storage', function(){
+  var TEST_FILE = path.join(__dirname, 'test.dat');
   beforeEach(function(){
-    fs.unlinkSync(TEST_FILE);
+    if (fs.existsSync(TEST_FILE)){
+      fs.unlinkSync(TEST_FILE);  
+    }
   });
 
   it('should store filter contents in file', function(done){
     var filter = bloomFilter.create(10);
+    
+    var EXPECTED_BUFFER = new Buffer('102080000104080000000000020010088000000000020410208000010408000000000002041020800001040000040020800001040800000000000204', 'hex');
 
-    filter.add(new Buffer('hello'));
+    filter.add('hello');
 
     filter.store(TEST_FILE, function(err){
       if (err) { return done(err); }
 
-      var buffer = fs.readSync(TEST_FILE);
-      // check buffer against expected
+      var buffer = fs.readFileSync(TEST_FILE);
+      
+      assert.strictEqual(buffertools.compare(buffer, EXPECTED_BUFFER), 0);
+      done();
     });
   });
 });

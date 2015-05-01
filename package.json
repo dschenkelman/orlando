@@ -12,6 +12,7 @@
   "author": "Damian Schenkelman",
   "license": "MIT",
   "devDependencies": {
+    "buffertools": "^2.1.2",
     "mocha": "^2.2.4"
   },
   "dependencies": {

@@ -77,7 +77,7 @@ BloomFilter.prototype.has = function(element){
 BloomFilter.prototype.store = function(path, cb){
   var ws = fs.createWriteStream(path);
   ws.on('finish', cb);
-  ws.write(this.bytes);
+  ws.write(this._bytes);
   ws.end();
 };
 
