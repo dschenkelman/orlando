@@ -7,23 +7,24 @@ npm i orlando
 ```
 
 ## Usage
+The bloom filter stores keys that are string values. If you want to store something else (e.g. a `Buffer`) just turn it into a `String`. 
 ```js
-var SIZE_IN_BYTES = 20;
+var APPROXIMATE_NUMBER_OF_ELEMENTS = 20;
 
-var filter = require('orlando').create(SIZE_IN_BYTES);
+var filter = require('orlando').create(APPROXIMATE_NUMBER_OF_ELEMENTS);
 
-filter.add(new Buffer('hello'));
+filter.add('hello');
 
-filter.has(new Buffer('hello')); // true
+filter.has('hello'); // true
 
-filter.has(new Buffer('goodbye')); // false
+filter.has('goodbye'); // false
 ```
 
 ### Persistence
 You can work with a filter and persist it to a file:
 ```js
 // persisting a filter to disk
-var filter = require('orlando').create(SIZE_IN_BYTES);
+var filter = require('orlando').create(APPROXIMATE_NUMBER_OF_ELEMENTS);
 
 ...
 

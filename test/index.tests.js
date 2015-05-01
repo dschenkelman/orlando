@@ -7,14 +7,14 @@ describe('runtime', function(){
   it('should not have element if it was just created', function(){
     var filter = bloomFilter.create(10);
 
-    assert.strictEqual(filter.has(new Buffer('test')), false);
+    assert.strictEqual(filter.has('test'), false);
   });
 
   it('should have element after adding it', function(){
     var filter = bloomFilter.create(10);
 
-    filter.add(new Buffer('test'));
-    assert.ok(filter.has(new Buffer('test')));
+    filter.add('test');
+    assert.ok(filter.has('test'));
   });
 
   it('should be able to add many elements', function(){
@@ -23,11 +23,11 @@ describe('runtime', function(){
     var values = [ 'test1', 'test2', 'test3' ];
 
     values.forEach(function(v){
-      filter.add(new Buffer(v));
+      filter.add(v);
     });
 
     values.forEach(function(v){
-      assert.ok(filter.has(new Buffer(v)));
+      assert.ok(filter.has(v));
     });
   });
 });
