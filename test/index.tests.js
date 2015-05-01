@@ -36,26 +36,45 @@ describe('runtime', function(){
 
 describe('storage', function(){
   var TEST_FILE = path.join(__dirname, 'test.dat');
-  beforeEach(function(){
-    if (fs.existsSync(TEST_FILE)){
-      fs.unlinkSync(TEST_FILE);  
-    }
-  });
-
-  it('should store filter contents in file', function(done){
-    var filter = bloomFilter.create(10);
+  
+  // last byte in buffer is number of hash functions
+  var BUFFER_WITH_HELLO = new Buffer('10208000010408000000000002001008800000000002041020800001040800000000000204102080000104000004002080000104080000000000020421', 'hex');
+  
+  describe('saving to file', function(){
+    before(function(){
+      if (fs.existsSync(TEST_FILE)){
+        fs.unlinkSync(TEST_FILE);  
+      }
+    });
     
-    var EXPECTED_BUFFER = new Buffer('102080000104080000000000020010088000000000020410208000010408000000000002041020800001040000040020800001040800000000000204', 'hex');
-
-    filter.add('hello');
-
-    filter.store(TEST_FILE, function(err){
-      if (err) { return done(err); }
-
-      var buffer = fs.readFileSync(TEST_FILE);
+    it('should store filter contents in file', function(done){
+      var filter = bloomFilter.create(10);
       
-      assert.strictEqual(buffertools.compare(buffer, EXPECTED_BUFFER), 0);
-      done();
+  
+      filter.add('hello');
+  
+      filter.store(TEST_FILE, function(err){
+        if (err) { return done(err); }
+  
+        var buffer = fs.readFileSync(TEST_FILE);
+        
+        assert.strictEqual(buffertools.compare(buffer, BUFFER_WITH_HELLO), 0);
+        done();
+      });
+    });
+  });
+  
+  describe('reading from file', function(){
+    before(function(){
+      fs.writeFileSync(TEST_FILE, BUFFER_WITH_HELLO);
+    });
+    
+    it('should load filter contents from file', function(done){
+      bloomFilter.load(TEST_FILE, function(err, filter){
+        if (err) { return done(err); }
+        assert.ok(filter.has('hello'));
+        done();
+      });
     });
   });
 });

@@ -7,7 +7,8 @@ var MASKS = [ 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 ];
 
 var HASHES = [ 'MD5', 'SHA1', 'SHA256' ];
 
-var FALSE_POSITIVE_RATE = 0.0000000001; 
+var FALSE_POSITIVE_RATE = 0.0000000001;
+var BYTES_FOR_HASH_COUNT = 1;
 
 exports.create = function(sizeInBytes){
   return new BloomFilter(sizeInBytes);
@@ -22,32 +23,36 @@ exports.load = function(path, cb){
 };
 
 var bitAndByte = function(pos){
-  return { byte: (pos / 8) | 0, bit: pos % 8 };
+  return { byte: (pos >> 3) | 0, bit: pos % 8 };
 };
 
 var BloomFilter = function(param){
-  // TODO: calculation based on probability and size
   if (!param){
     throw new Error('Must either provide an existing buffer or an amount of elements');
   }
 
   if (Buffer.isBuffer(param)){
     this._bytes = param;
+
+    // last byte in filter stores amount of hashes
+    this.sizeInBits = (this._bytes.length - 1) * 8;
+    this._hashes = new Array(this._bytes[this._bytes.length - 1]);
   } else {
     var elements = param | 0;
     if (elements < 1){
       throw new Error('Byte size should be at least one');
     }
-    
-    Math.ceil()
 
     this.sizeInBits = Math.ceil((elements * Math.log(FALSE_POSITIVE_RATE)) / 
       Math.log(1.0 / (Math.pow(2.0, Math.log(2.0)))));
-    
-    this._bytes = new Buffer(this.sizeInBits >> 3).fill(0);
-    
+
+    this._bytes = new Buffer((this.sizeInBits >> 3) + BYTES_FOR_HASH_COUNT).fill(0);
+
     var keys = (Math.log(2.0) * this.sizeInBits / elements) | 0;
     this._hashes = new Array(keys);
+    // this is mostly affected by false positive rate, it is 33 for 1E-10
+    // so it fits in one byte
+    this._bytes[this._bytes.length - 1] = keys;
   }
 };
 
