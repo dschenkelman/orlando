@@ -33,10 +33,10 @@ filter.store('bloom.data', function(err, res){
 });
 ```
 
-You can load a filter from a file:
+You can later load a filter from a file:
 ```js
 // loading a filter from disk
-require('orlando').create('bloom.data', function(err, filter){
+require('orlando').load('bloom.data', function(err, filter){
     // work with filter
 });
 ```
