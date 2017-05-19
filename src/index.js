@@ -87,7 +87,7 @@ BloomFilter.prototype.store = function(path, cb){
 };
 
 BloomFilter.prototype._applyHashes = function(element) {
-  // http://www.eecs.harvard.edu/~kirsch/pubs/bbbf/esa06.pdf
+  // https://www.eecs.harvard.edu/~michaelm/postscripts/tr-02-05.pdf
   var h1 = murmur(element, 0) | 0;
   var h2 = murmur(element, h1 | 0) | 0;
   var times = this._hashes.length;
